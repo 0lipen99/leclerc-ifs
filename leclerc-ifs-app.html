@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leclerc IFS — Trouve ton produit</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080c18;
+  --surface: #0d1424;
+  --card: #111b2e;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --blue: #0057a8;
+  --blue2: #1a7fe8;
+  --yellow: #f5c800;
+  --green: #22c55e;
+  --text: #dde3f0;
+  --muted: #5a6580;
+  --muted2: #8895b0;
+  --mono: 'JetBrains Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+/* Grid bg */
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0;
+  background-image: linear-gradient(rgba(0,87,168,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,87,168,0.03) 1px, transparent 1px);
+  background-size: 36px 36px; pointer-events: none;
+}
+
+/* ── HEADER ── */
+header {
+  position: sticky; top: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px;
+  background: rgba(8,12,24,0.95); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.logo { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.logo-e { width: 34px; height: 34px; background: var(--yellow); border-radius: 8px; display: grid; place-items: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; color: var(--bg); }
+.logo-text { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; }
+.logo-text span { color: var(--yellow); }
+.header-right { display: flex; align-items: center; gap: 10px; }
+.store-pill { font-size: .73rem; color: var(--muted2); background: rgba(255,255,255,0.04); border: 1px solid var(--border2); padding: 5px 12px; border-radius: 20px; }
+.ai-pill { font-size: .73rem; color: #00e5a0; background: rgba(0,229,160,0.07); border: 1px solid rgba(0,229,160,0.2); padding: 5px 12px; border-radius: 20px; display: flex; align-items: center; gap: 5px; cursor: pointer; transition: background .15s; }
+.ai-pill:hover { background: rgba(0,229,160,0.14); }
+.ai-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #00e5a0; animation: blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+
+/* ── TABS ── */
+.tabs {
+  display: flex; gap: 0;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  position: sticky; top: 63px; z-index: 150;
+}
+.tab {
+  flex: 1; padding: 14px; text-align: center;
+  font-family: 'Syne', sans-serif; font-weight: 600; font-size: .82rem;
+  color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent;
+  transition: all .2s; position: relative; z-index: 1;
+}
+.tab.active { color: var(--yellow); border-bottom-color: var(--yellow); }
+.tab:hover:not(.active) { color: var(--text); }
+
+/* ── PAGES ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ══════════════════════════════════════
+   PAGE 1 — FINDER
+══════════════════════════════════════ */
+.finder-wrap { max-width: 860px; margin: 0 auto; padding: 28px 20px 60px; position: relative; z-index: 1; }
+
+.hero { text-align: center; margin-bottom: 28px; }
+.hero h1 { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; line-height: 1.2; background: linear-gradient(135deg, #fff 40%, var(--yellow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+.hero p { color: var(--muted2); font-size: .9rem; }
+
+/* Search */
+.search-box { display: flex; background: var(--card); border: 1.5px solid var(--border2); border-radius: 16px; overflow: hidden; margin-bottom: 14px; transition: border-color .2s; }
+.search-box:focus-within { border-color: var(--yellow); }
+.search-box input { flex: 1; background: none; border: none; outline: none; color: var(--text); font-size: 1rem; padding: 14px 18px; font-family: 'DM Sans', sans-serif; }
+.search-box input::placeholder { color: var(--muted); }
+.search-box button { background: var(--yellow); color: var(--bg); border: none; padding: 14px 22px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: .9rem; cursor: pointer; white-space: nowrap; transition: background .15s; }
+.search-box button:hover { background: #ffd520; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; margin-bottom: 20px; }
+.chip { font-size: .78rem; padding: 6px 13px; border-radius: 20px; background: rgba(255,255,255,0.04); border: 1px solid var(--border2); color: var(--muted2); cursor: pointer; transition: all .15s; }
+.chip:hover { border-color: var(--yellow); color: var(--yellow); background: rgba(245,200,0,0.06); }
+
+/* Result banner */
+.result-banner {
+  display: none; align-items: center; gap: 14px;
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: 14px; padding: 16px 20px; margin-bottom: 16px;
+}
+.result-banner.show { display: flex; }
+.res-icon { font-size: 2rem; }
+.res-info h3 { font-family: 'Syne', sans-serif; font-size: 1rem; margin-bottom: 3px; }
+.res-info p { font-size: .8rem; color: var(--muted2); }
+.res-tag { margin-left: auto; background: rgba(245,200,0,0.1); border: 1px solid rgba(245,200,0,0.25); color: var(--yellow); border-radius: 20px; padding: 6px 14px; font-size: .78rem; white-space: nowrap; }
+.not-found-msg { display: none; text-align: center; color: var(--muted); padding: 12px; font-size: .88rem; }
+.not-found-msg.show { display: block; }
+
+/* MAP */
+.map-card { background: var(--card); border: 1px solid var(--border2); border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+svg#map { width: 100%; height: auto; display: block; }
+.zone { cursor: pointer; transition: opacity .15s; }
+.zone:hover { opacity: .8; }
+.zone.hl rect, .zone.hl polygon { filter: drop-shadow(0 0 10px rgba(245,200,0,0.9)); stroke-width: 2.5 !important; }
+.nav-path { stroke: var(--yellow); stroke-width: 3.5; fill: none; stroke-dasharray: 9 5; stroke-linecap: round; animation: dash 1s linear infinite; filter: drop-shadow(0 0 5px rgba(245,200,0,0.7)); }
+@keyframes dash { to { stroke-dashoffset: -28; } }
+.you-pulse { animation: youpulse 1.5s ease-in-out infinite; }
+@keyframes youpulse { 0%,100%{r:8;opacity:1}50%{r:12;opacity:.5} }
+.dest-pulse { animation: destpulse 1.2s ease-in-out infinite; }
+@keyframes destpulse { 0%,100%{r:12;opacity:.8}50%{r:16;opacity:.3} }
+.zlabel { font-family: 'DM Sans', sans-serif; pointer-events: none; dominant-baseline: middle; text-anchor: middle; }
+
+/* Legend */
+.map-legend { display: flex; flex-wrap: wrap; gap: 7px; padding: 14px 18px; border-top: 1px solid var(--border); }
+.leg { display: flex; align-items: center; gap: 5px; font-size: .72rem; color: var(--muted2); cursor: pointer; padding: 3px 8px; border-radius: 12px; border: 1px solid transparent; transition: all .15s; }
+.leg:hover { border-color: var(--border2); color: var(--text); }
+.leg-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+
+/* Map tooltip */
+.mtt { position: absolute; pointer-events: none; display: none; background: rgba(8,12,24,0.96); backdrop-filter: blur(10px); border: 1px solid var(--border2); border-radius: 10px; padding: 10px 14px; min-width: 160px; z-index: 50; }
+.mtt h4 { font-family: 'Syne', sans-serif; font-size: .85rem; margin-bottom: 3px; }
+.mtt p { font-size: .74rem; color: var(--muted2); }
+
+/* ══════════════════════════════════════
+   PAGE 2 — SCANNER IA
+══════════════════════════════════════ */
+.scanner-wrap { max-width: 900px; margin: 0 auto; padding: 28px 20px 60px; position: relative; z-index: 1; display: grid; grid-template-columns: 340px 1fr; gap: 20px; }
+@media (max-width: 720px) { .scanner-wrap { grid-template-columns: 1fr; } }
+
+/* Left config */
+.scan-left { display: flex; flex-direction: column; gap: 16px; }
+.panel { background: var(--card); border: 1px solid var(--border2); border-radius: 16px; padding: 20px; }
+.panel-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+.flabel { font-size: .78rem; color: var(--muted2); font-weight: 500; margin-bottom: 5px; }
+.finput { width: 100%; background: var(--surface); border: 1px solid var(--border2); border-radius: 9px; padding: 9px 12px; color: var(--text); font-size: .88rem; font-family: 'DM Sans', sans-serif; outline: none; margin-bottom: 12px; transition: border-color .2s; }
+.finput:focus { border-color: var(--yellow); }
+select.finput { cursor: pointer; }
+
+.sec-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.sec-badge { width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; font-family: var(--mono); font-size: .72rem; flex-shrink: 0; }
+.sec-row input { flex: 1; background: var(--surface); border: 1px solid var(--border2); border-radius: 7px; padding: 6px 10px; color: var(--text); font-size: .82rem; font-family: 'DM Sans', sans-serif; outline: none; }
+.add-sec { width: 100%; background: transparent; border: 1px dashed var(--border2); border-radius: 9px; padding: 7px; color: var(--muted); font-size: .8rem; cursor: pointer; transition: all .15s; font-family: 'DM Sans', sans-serif; }
+.add-sec:hover { border-color: var(--blue2); color: var(--blue2); }
+
+.upload-zone { border: 2px dashed var(--border2); border-radius: 13px; padding: 24px 16px; text-align: center; cursor: pointer; transition: all .2s; position: relative; overflow: hidden; }
+.upload-zone:hover { border-color: var(--yellow); background: rgba(245,200,0,0.03); }
+.upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-zone .ui { font-size: 1.8rem; margin-bottom: 6px; }
+.upload-zone p { font-size: .8rem; color: var(--muted2); }
+.upload-zone p strong { color: var(--yellow); }
+#upPreview { width: 100%; border-radius: 8px; margin-top: 10px; display: none; max-height: 160px; object-fit: cover; }
+
+.scan-btn { width: 100%; padding: 13px; background: linear-gradient(135deg, var(--blue), var(--blue2)); color: #fff; border: none; border-radius: 12px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: .92rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all .2s; }
+.scan-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,87,168,0.4); }
+.scan-btn:disabled { opacity: .5; cursor: not-allowed; }
+.spinner { width: 17px; height: 17px; border: 2px solid rgba(255,255,255,0.25); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Right output */
+.scan-right { display: flex; flex-direction: column; gap: 16px; }
+.scan-output { background: var(--card); border: 1px solid var(--border2); border-radius: 16px; overflow: hidden; position: relative; min-height: 420px; display: flex; flex-direction: column; }
+
+.scan-tabs { display: flex; border-bottom: 1px solid var(--border); }
+.stab { flex: 1; padding: 11px; text-align: center; font-family: 'Syne', sans-serif; font-weight: 600; font-size: .78rem; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; background: none; border-top: none; border-left: none; border-right: none; }
+.stab.active { color: var(--yellow); border-bottom-color: var(--yellow); }
+
+.scan-canvas-wrap { flex: 1; padding: 18px; display: flex; align-items: center; justify-content: center; position: relative; }
+canvas#scanCanvas { border-radius: 12px; max-width: 100%; max-height: 360px; display: none; border: 1px solid var(--border2); }
+
+.scan-empty { text-align: center; padding: 60px 20px; }
+.scan-empty .ei { font-size: 2.5rem; opacity: .25; margin-bottom: 10px; }
+.scan-empty p { font-size: .85rem; color: var(--muted); line-height: 1.6; }
+
+.thinking { position: absolute; inset: 0; background: rgba(8,12,24,0.88); backdrop-filter: blur(6px); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; border-radius: 16px; }
+.thinking.show { display: flex; }
+.think-spin { width: 50px; height: 50px; border: 3px solid rgba(245,200,0,0.15); border-top-color: var(--yellow); border-radius: 50%; animation: spin .8s linear infinite; }
+.think-label { font-family: 'Syne', sans-serif; font-weight: 600; color: var(--yellow); }
+.think-sub { font-family: var(--mono); font-size: .75rem; color: var(--muted2); }
+
+.prod-list { max-height: 200px; overflow-y: auto; padding: 14px; border-top: 1px solid var(--border); display: none; }
+.pitem { display: flex; align-items: center; gap: 9px; padding: 9px 11px; border-radius: 9px; margin-bottom: 5px; background: var(--surface); border: 1px solid var(--border); cursor: pointer; transition: all .15s; }
+.pitem:hover { border-color: var(--yellow); }
+.pdot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.pname { flex: 1; font-size: .83rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pcoord { font-family: var(--mono); font-size: .68rem; color: var(--muted); }
+.psec { font-size: .68rem; padding: 2px 7px; border-radius: 6px; flex-shrink: 0; }
+
+.json-area { flex: 1; padding: 16px; overflow-y: auto; display: none; }
+.json-block { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; font-family: var(--mono); font-size: .75rem; line-height: 1.7; color: var(--muted2); white-space: pre-wrap; overflow-x: auto; }
+.jk { color: #7dd3fc; } .js { color: #86efac; } .jn { color: #fbbf24; }
+
+.export-bar { padding: 12px 14px; border-top: 1px solid var(--border); display: none; justify-content: flex-end; gap: 8px; }
+.export-bar.show { display: flex; }
+.exp-btn { padding: 7px 15px; border-radius: 8px; font-family: 'Syne', sans-serif; font-size: .75rem; font-weight: 600; cursor: pointer; border: none; transition: all .15s; }
+.exp-json { background: rgba(0,229,160,0.1); color: #00e5a0; border: 1px solid rgba(0,229,160,0.2); }
+.exp-json:hover { background: rgba(0,229,160,0.18); }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo" onclick="switchTab('finder')">
+    <div class="logo-e">E</div>
+    <div class="logo-text">Le<span>clerc</span> <span style="color:var(--muted);font-weight:300;font-size:.8rem">IFS</span></div>
+  </div>
+  <div class="header-right">
+    <div class="store-pill">📍 Leclerc IFS</div>
+    <div class="ai-pill" onclick="switchTab('scanner')">Scanner IA</div>
+  </div>
+</header>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" id="tab-finder" onclick="switchTab('finder')">🗺 Trouver un produit</div>
+  <div class="tab" id="tab-scanner" onclick="switchTab('scanner')">📷 Scanner un rayon</div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PAGE 1 — FINDER
+═══════════════════════════════════ -->
+<div class="page active" id="page-finder">
+<div class="finder-wrap">
+
+  <div class="hero">
+    <h1>Trouve ton produit</h1>
+    <p>Tape ce que tu cherches — on te guide directement au rayon.</p>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Ex : Nutella, lait, shampoing, bière…" autocomplete="off"/>
+    <button onclick="doSearch()">🔍 Chercher</button>
+  </div>
+
+  <div class="chips">
+    <span class="chip" onclick="doSearch('boucherie')">🥩 Boucherie</span>
+    <span class="chip" onclick="doSearch('fruits légumes')">🥦 Fruits &amp; Légumes</span>
+    <span class="chip" onclick="doSearch('surgelés')">❄️ Surgelés</span>
+    <span class="chip" onclick="doSearch('boulangerie')">🍞 Boulangerie</span>
+    <span class="chip" onclick="doSearch('hygiène')">🧴 Hygiène</span>
+    <span class="chip" onclick="doSearch('vins')">🍷 Vins</span>
+    <span class="chip" onclick="doSearch('pharmacie')">💊 Pharmacie</span>
+    <span class="chip" onclick="doSearch('caisses')">🛒 Caisses</span>
+    <span class="chip" onclick="doSearch('épicerie sucrée')">🍪 Épicerie sucrée</span>
+    <span class="chip" onclick="doSearch('épicerie')">🥫 Épicerie salée</span>
+    <span class="chip" onclick="doSearch('alcool')">🍾 Alcool</span>
+    <span class="chip" onclick="doSearch('bière')">🍺 Bière</span>
+  </div>
+
+  <div class="not-found-msg" id="notFoundMsg">🔍 Produit introuvable. Essaie un autre terme ou consulte un employé.</div>
+
+  <div class="result-banner" id="resultBanner">
+    <div class="res-icon" id="resIcon">🛒</div>
+    <div class="res-info">
+      <h3 id="resName">—</h3>
+      <p id="resDesc">—</p>
+    </div>
+    <div class="res-tag" id="resTag">—</div>
+  </div>
+
+  <!-- MAP CARD -->
+  <div class="map-card" style="position:relative">
+    <svg id="map" viewBox="0 0 1000 680" xmlns="http://www.w3.org/2000/svg">
+      <!-- BG -->
+      <rect width="1000" height="680" fill="#0d1525"/>
+      <rect x="10" y="10" width="980" height="620" rx="6" fill="#111f38" stroke="#1e2d4a" stroke-width="1.5"/>
+
+      <!-- ── TOP ROW ── -->
+      <g class="zone" id="z-poissonnerie" onclick="zoneClick('poissonnerie')">
+        <rect x="260" y="20" width="110" height="38" rx="3" fill="#1d4ed8" stroke="#3b82f6" stroke-width="1"/>
+        <text x="315" y="39" class="zlabel" font-size="9" fill="#bfdbfe">Poissonnerie 🐟</text>
+      </g>
+      <g class="zone" id="z-boucherie" onclick="zoneClick('boucherie')">
+        <rect x="375" y="20" width="160" height="38" rx="3" fill="#b45309" stroke="#d97706" stroke-width="1"/>
+        <text x="455" y="39" class="zlabel" font-size="10" fill="#fde68a">Boucherie 🥩</text>
+      </g>
+      <g class="zone" id="z-fromagerie" onclick="zoneClick('fromagerie')">
+        <rect x="540" y="20" width="200" height="38" rx="3" fill="#92400e" stroke="#b45309" stroke-width="1"/>
+        <text x="640" y="35" class="zlabel" font-size="8.5" fill="#fde68a">Fromagerie · Charcuterie</text>
+        <text x="640" y="47" class="zlabel" font-size="8" fill="#fde68a">Traiteur</text>
+      </g>
+      <g class="zone" id="z-woki" onclick="zoneClick('woki')">
+        <rect x="744" y="20" width="60" height="38" rx="3" fill="#7c3aed" stroke="#a78bfa" stroke-width="1"/>
+        <text x="774" y="39" class="zlabel" font-size="8" fill="#ddd6fe">Woki Moki</text>
+      </g>
+      <g class="zone" id="z-boul-top" onclick="zoneClick('boulangerie')">
+        <rect x="808" y="20" width="172" height="38" rx="3" fill="#d97706" stroke="#f59e0b" stroke-width="1"/>
+        <text x="894" y="35" class="zlabel" font-size="9" fill="#fffbeb">Pâtisserie</text>
+        <text x="894" y="47" class="zlabel" font-size="9" fill="#fffbeb">Boulangerie</text>
+      </g>
+      <g class="zone" id="z-locaux" onclick="zoneClick('produits locaux')">
+        <rect x="808" y="62" width="172" height="22" rx="2" fill="#059669" stroke="#10b981" stroke-width="1"/>
+        <text x="894" y="73" class="zlabel" font-size="7.5" fill="#d1fae5">Produits locaux sucrés</text>
+      </g>
+
+      <!-- ── LEFT COLUMN ── -->
+      <g class="zone" id="z-pati-left" onclick="zoneClick('pâtisserie')">
+        <rect x="18" y="62" width="130" height="22" rx="2" fill="#d97706" stroke="#f59e0b" stroke-width="1"/>
+        <text x="83" y="73" class="zlabel" font-size="8" fill="#fffbeb">Pâtisserie industrielle</text>
+      </g>
+      <g class="zone" id="z-lait" onclick="zoneClick('lait')">
+        <rect x="18" y="88" width="130" height="20" rx="2" fill="#1d4ed8" stroke="#3b82f6" stroke-width="1"/>
+        <text x="83" y="98" class="zlabel" font-size="7.5" fill="#bfdbfe">Lait · Œufs · Chapelier</text>
+      </g>
+      <g class="zone" id="z-animalerie" onclick="zoneClick('animalerie')">
+        <rect x="18" y="112" width="130" height="50" rx="3" fill="#047857" stroke="#10b981" stroke-width="1"/>
+        <text x="83" y="137" class="zlabel" font-size="11" fill="#d1fae5">Animalerie 🐾</text>
+      </g>
+      <g class="zone" id="z-monde" onclick="zoneClick('produits du monde')">
+        <rect x="18" y="166" width="130" height="22" rx="2" fill="#065f46" stroke="#10b981" stroke-width="1"/>
+        <text x="83" y="177" class="zlabel" font-size="7.5" fill="#a7f3d0">Produits monde · Locaux salés</text>
+      </g>
+      <g class="zone" id="z-bio" onclick="zoneClick('bio')">
+        <rect x="18" y="192" width="130" height="20" rx="2" fill="#166534" stroke="#4ade80" stroke-width="1"/>
+        <text x="83" y="202" class="zlabel" font-size="7.5" fill="#bbf7d0">Sans gluten · Bio · Diét.</text>
+      </g>
+      <g class="zone" id="z-vins" onclick="zoneClick('vins')">
+        <rect x="18" y="216" width="130" height="80" rx="3" fill="#7f1d1d" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="83" y="256" class="zlabel" font-size="14" fill="#fecaca">Vins 🍷</text>
+      </g>
+      <g class="zone" id="z-biere" onclick="zoneClick('bière')">
+        <rect x="18" y="300" width="130" height="28" rx="3" fill="#92400e" stroke="#f59e0b" stroke-width="1"/>
+        <text x="83" y="314" class="zlabel" font-size="10" fill="#fde68a">Bière 🍺</text>
+      </g>
+      <g class="zone" id="z-saucisson" onclick="zoneClick('saucisson')">
+        <rect x="18" y="332" width="130" height="20" rx="2" fill="#991b1b" stroke="#f87171" stroke-width="1"/>
+        <text x="83" y="342" class="zlabel" font-size="8.5" fill="#fecaca">Saucisson</text>
+      </g>
+      <g class="zone" id="z-gateaux" onclick="zoneClick('gâteaux apéritifs')">
+        <rect x="18" y="356" width="130" height="36" rx="3" fill="#b91c1c" stroke="#f87171" stroke-width="1"/>
+        <text x="83" y="374" class="zlabel" font-size="10" fill="#fecaca">Gâteaux apéritifs</text>
+      </g>
+      <g class="zone" id="z-alcool" onclick="zoneClick('alcool')">
+        <rect x="18" y="396" width="130" height="80" rx="3" fill="#7f1d1d" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="83" y="436" class="zlabel" font-size="14" fill="#fecaca">Alcool 🍾</text>
+      </g>
+
+      <!-- ── PROMO BANDS ── -->
+      <g class="zone" id="z-promo1" onclick="zoneClick('promo')">
+        <rect x="152" y="88" width="28" height="280" rx="3" fill="#f59e0b" stroke="#fbbf24" stroke-width="1"/>
+        <text x="166" y="228" class="zlabel" font-size="7.5" fill="#78350f" transform="rotate(-90,166,228)">PROMO</text>
+      </g>
+      <g class="zone" id="z-promo2" onclick="zoneClick('promo')">
+        <rect x="803" y="88" width="28" height="120" rx="3" fill="#f59e0b" stroke="#fbbf24" stroke-width="1"/>
+        <text x="817" y="148" class="zlabel" font-size="7.5" fill="#78350f" transform="rotate(-90,817,148)">PROMO</text>
+      </g>
+      <g class="zone" id="z-promo3" onclick="zoneClick('promo')">
+        <rect x="152" y="372" width="28" height="200" rx="3" fill="#f59e0b" stroke="#fbbf24" stroke-width="1"/>
+        <text x="166" y="472" class="zlabel" font-size="7.5" fill="#78350f" transform="rotate(-90,166,472)">PROMO</text>
+      </g>
+      <g class="zone" id="z-promo4" onclick="zoneClick('promo')">
+        <rect x="803" y="372" width="28" height="200" rx="3" fill="#f59e0b" stroke="#fbbf24" stroke-width="1"/>
+        <text x="817" y="472" class="zlabel" font-size="7.5" fill="#78350f" transform="rotate(-90,817,472)">PROMO</text>
+      </g>
+
+      <!-- ── CENTER TOP ── -->
+      <g class="zone" id="z-epicerie-sal" onclick="zoneClick('épicerie')">
+        <rect x="184" y="88" width="120" height="120" rx="3" fill="#ea580c" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="244" y="143" class="zlabel" font-size="11" fill="#ffedd5">Épicerie</text>
+        <text x="244" y="157" class="zlabel" font-size="9.5" fill="#ffedd5">salée 🥫</text>
+      </g>
+      <g class="zone" id="z-cremerie" onclick="zoneClick('crèmerie')">
+        <rect x="308" y="88" width="90" height="120" rx="3" fill="#65a30d" stroke="#84cc16" stroke-width="1.5"/>
+        <text x="353" y="143" class="zlabel" font-size="11" fill="#ecfccb">Crèmerie</text>
+        <text x="353" y="156" class="zlabel" font-size="9" fill="#ecfccb">🥛🧀</text>
+      </g>
+      <g class="zone" id="z-fruits" onclick="zoneClick('fruits légumes')">
+        <rect x="402" y="88" width="110" height="120" rx="3" fill="#16a34a" stroke="#4ade80" stroke-width="1.5"/>
+        <text x="457" y="140" class="zlabel" font-size="10" fill="#dcfce7">Fruits &amp;</text>
+        <text x="457" y="153" class="zlabel" font-size="10" fill="#dcfce7">Légumes 🥦</text>
+      </g>
+      <g class="zone" id="z-hygiene" onclick="zoneClick('hygiène')">
+        <rect x="516" y="88" width="150" height="120" rx="3" fill="#7c3aed" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="591" y="140" class="zlabel" font-size="9.5" fill="#ede9fe">Hygiène · Soin</text>
+        <text x="591" y="153" class="zlabel" font-size="9.5" fill="#ede9fe">Maquillage 🧴</text>
+      </g>
+      <g class="zone" id="z-hab-top" onclick="zoneClick('habillement')">
+        <rect x="670" y="88" width="130" height="120" rx="3" fill="#db2777" stroke="#f472b6" stroke-width="1.5"/>
+        <text x="735" y="140" class="zlabel" font-size="9.5" fill="#fce7f3">Habillement</text>
+        <text x="735" y="153" class="zlabel" font-size="9.5" fill="#fce7f3">Linge maison 👕</text>
+      </g>
+
+      <!-- ── RIGHT COLUMN ── -->
+      <g class="zone" id="z-pati-right" onclick="zoneClick('pâtisserie')">
+        <rect x="835" y="88" width="145" height="22" rx="2" fill="#d97706" stroke="#f59e0b" stroke-width="1"/>
+        <text x="907" y="99" class="zlabel" font-size="8" fill="#fffbeb">Pâtisseries industrielles</text>
+      </g>
+      <g class="zone" id="z-entretien" onclick="zoneClick('entretien')">
+        <rect x="835" y="114" width="145" height="76" rx="3" fill="#0891b2" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="907" y="148" class="zlabel" font-size="9.5" fill="#cffafe">Produits entretien</text>
+        <text x="907" y="161" class="zlabel" font-size="9.5" fill="#cffafe">&amp; hygiène 🧹</text>
+      </g>
+      <g class="zone" id="z-bricolage" onclick="zoneClick('bricolage')">
+        <rect x="835" y="194" width="145" height="36" rx="3" fill="#78350f" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="907" y="212" class="zlabel" font-size="10" fill="#fde68a">Bricolage · Auto 🔧</text>
+      </g>
+      <g class="zone" id="z-sport" onclick="zoneClick('sport')">
+        <rect x="835" y="234" width="145" height="36" rx="3" fill="#1d4ed8" stroke="#60a5fa" stroke-width="1.5"/>
+        <text x="907" y="252" class="zlabel" font-size="10.5" fill="#bfdbfe">Sport · Jouets ⚽</text>
+      </g>
+      <g class="zone" id="z-bazar" onclick="zoneClick('bazar')">
+        <rect x="835" y="274" width="145" height="122" rx="3" fill="#166534" stroke="#4ade80" stroke-width="1.5"/>
+        <text x="907" y="328" class="zlabel" font-size="10.5" fill="#d1fae5">Bazar saisonnier</text>
+        <text x="907" y="342" class="zlabel" font-size="10.5" fill="#d1fae5">Jardin 🌱</text>
+      </g>
+      <g class="zone" id="z-papeterie" onclick="zoneClick('papeterie')">
+        <rect x="835" y="400" width="145" height="36" rx="3" fill="#4338ca" stroke="#818cf8" stroke-width="1.5"/>
+        <text x="907" y="418" class="zlabel" font-size="10" fill="#e0e7ff">Papeterie ✏️</text>
+      </g>
+      <g class="zone" id="z-art-table" onclick="zoneClick('art de la table')">
+        <rect x="835" y="440" width="145" height="50" rx="3" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.5"/>
+        <text x="907" y="465" class="zlabel" font-size="10" fill="#bfdbfe">Art de la table 🍽️</text>
+      </g>
+      <g class="zone" id="z-electro" onclick="zoneClick('électroménager')">
+        <rect x="835" y="494" width="145" height="62" rx="3" fill="#0c4a6e" stroke="#38bdf8" stroke-width="1.5"/>
+        <text x="907" y="522" class="zlabel" font-size="9.5" fill="#bae6fd">Électroménager 🏠</text>
+      </g>
+
+      <!-- ── CENTER BOTTOM ── -->
+      <g class="zone" id="z-epicerie-suc" onclick="zoneClick('épicerie sucrée')">
+        <rect x="184" y="372" width="110" height="200" rx="3" fill="#ea580c" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="239" y="462" class="zlabel" font-size="11" fill="#ffedd5">Épicerie</text>
+        <text x="239" y="476" class="zlabel" font-size="10" fill="#ffedd5">sucrée 🍪</text>
+      </g>
+      <g class="zone" id="z-lait-cons" onclick="zoneClick('lait')">
+        <rect x="298" y="372" width="38" height="200" rx="2" fill="#d97706" stroke="#fbbf24" stroke-width="1"/>
+        <text x="317" y="472" class="zlabel" font-size="7.5" fill="#fffbeb" transform="rotate(-90,317,472)">Lait conserve</text>
+      </g>
+      <g class="zone" id="z-jus" onclick="zoneClick('jus de fruits')">
+        <rect x="340" y="372" width="38" height="200" rx="2" fill="#f59e0b" stroke="#fbbf24" stroke-width="1"/>
+        <text x="359" y="472" class="zlabel" font-size="7.5" fill="#78350f" transform="rotate(-90,359,472)">Jus de fruits 🧃</text>
+      </g>
+      <g class="zone" id="z-glaces" onclick="zoneClick('glaces')">
+        <rect x="382" y="372" width="35" height="200" rx="2" fill="#2563eb" stroke="#60a5fa" stroke-width="1"/>
+        <text x="399" y="472" class="zlabel" font-size="7.5" fill="#dbeafe" transform="rotate(-90,399,472)">Glaces 🍦</text>
+      </g>
+      <g class="zone" id="z-surgeles" onclick="zoneClick('surgelés')">
+        <rect x="421" y="372" width="80" height="200" rx="3" fill="#4338ca" stroke="#818cf8" stroke-width="1.5"/>
+        <text x="461" y="466" class="zlabel" font-size="11" fill="#e0e7ff">Surgelés</text>
+        <text x="461" y="480" class="zlabel" font-size="10" fill="#e0e7ff">❄️</text>
+      </g>
+      <g class="zone" id="z-bebe" onclick="zoneClick('bébé')">
+        <rect x="505" y="372" width="38" height="200" rx="2" fill="#db2777" stroke="#f472b6" stroke-width="1"/>
+        <text x="524" y="472" class="zlabel" font-size="7.5" fill="#fce7f3" transform="rotate(-90,524,472)">Présentation bébé 👶</text>
+      </g>
+      <g class="zone" id="z-hab-bot" onclick="zoneClick('habillement')">
+        <rect x="547" y="372" width="252" height="200" rx="3" fill="#be185d" stroke="#f472b6" stroke-width="1.5"/>
+        <text x="673" y="465" class="zlabel" font-size="15" fill="#fce7f3">Habillement 👗</text>
+      </g>
+
+      <!-- ── CAISSES ROW ── -->
+      <g class="zone" id="z-caisse-prio-l" onclick="zoneClick('caisses')">
+        <rect x="260" y="576" width="80" height="30" rx="3" fill="#374151" stroke="#9ca3af" stroke-width="1"/>
+        <text x="300" y="591" class="zlabel" font-size="8" fill="#e5e7eb">Caisse prioritaire</text>
+      </g>
+      <g class="zone" id="z-caisses-scan" onclick="zoneClick('caisses')">
+        <rect x="344" y="576" width="110" height="30" rx="3" fill="#1f2937" stroke="#6b7280" stroke-width="1.5"/>
+        <text x="399" y="588" class="zlabel" font-size="8.5" fill="#d1d5db">Caisses SCAN</text>
+        <text x="399" y="599" class="zlabel" font-size="7" fill="#9ca3af">10 · 11 · 12</text>
+      </g>
+      <g class="zone" id="z-caisses" onclick="zoneClick('caisses')">
+        <rect x="458" y="576" width="110" height="30" rx="3" fill="#111827" stroke="#f5c800" stroke-width="1.5"/>
+        <text x="513" y="588" class="zlabel" font-size="9" fill="#f3f4f6" font-weight="600">Caisses 🛒</text>
+        <text x="513" y="599" class="zlabel" font-size="7" fill="#9ca3af">13 · 14 · 15 · 16</text>
+      </g>
+      <g class="zone" id="z-caisses-20" onclick="zoneClick('caisses')">
+        <rect x="572" y="576" width="100" height="30" rx="3" fill="#1f2937" stroke="#6b7280" stroke-width="1"/>
+        <text x="622" y="588" class="zlabel" font-size="8" fill="#d1d5db">Caisses −20 art.</text>
+        <text x="622" y="599" class="zlabel" font-size="7" fill="#9ca3af">17</text>
+      </g>
+      <g class="zone" id="z-caisse-prio-r" onclick="zoneClick('caisses')">
+        <rect x="676" y="576" width="80" height="30" rx="3" fill="#374151" stroke="#9ca3af" stroke-width="1"/>
+        <text x="716" y="591" class="zlabel" font-size="8" fill="#e5e7eb">Caisse prioritaire</text>
+      </g>
+      <g class="zone" id="z-caisse-centrale" onclick="zoneClick('caisses')">
+        <rect x="415" y="616" width="90" height="28" rx="3" fill="#374151" stroke="#f5c800" stroke-width="1.5"/>
+        <text x="460" y="630" class="zlabel" font-size="8.5" fill="#fde68a">Caisse centrale</text>
+      </g>
+
+      <!-- ── BOTTOM SERVICES ── -->
+      <g class="zone" id="z-bijoux" onclick="zoneClick('bijoux')">
+        <rect x="560" y="620" width="90" height="30" rx="3" fill="#7c3aed" stroke="#a78bfa" stroke-width="1"/>
+        <text x="605" y="635" class="zlabel" font-size="8.5" fill="#ede9fe">Bijoux 💍</text>
+      </g>
+      <g class="zone" id="z-accueil" onclick="zoneClick('accueil')">
+        <rect x="775" y="620" width="56" height="28" rx="3" fill="#0369a1" stroke="#38bdf8" stroke-width="1"/>
+        <text x="803" y="634" class="zlabel" font-size="8.5" fill="#bae6fd">Accueil ℹ️</text>
+      </g>
+      <g class="zone" id="z-sav" onclick="zoneClick('sav')">
+        <rect x="835" y="560" width="70" height="28" rx="3" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1"/>
+        <text x="870" y="574" class="zlabel" font-size="8" fill="#bfdbfe">Retrait SAV</text>
+      </g>
+      <g class="zone" id="z-culturel" onclick="zoneClick('espace culturel')">
+        <rect x="910" y="560" width="70" height="28" rx="3" fill="#1e40af" stroke="#60a5fa" stroke-width="1"/>
+        <text x="945" y="574" class="zlabel" font-size="7.5" fill="#bfdbfe">Espace culturel</text>
+      </g>
+      <g class="zone" id="z-pharmacie" onclick="zoneClick('pharmacie')">
+        <rect x="590" y="648" width="90" height="26" rx="3" fill="#166534" stroke="#4ade80" stroke-width="1.5"/>
+        <text x="635" y="661" class="zlabel" font-size="9.5" fill="#d1fae5">Pharmacie 💊</text>
+      </g>
+      <g class="zone" id="z-presse" onclick="zoneClick('presse')">
+        <rect x="700" y="648" width="70" height="26" rx="3" fill="#374151" stroke="#9ca3af" stroke-width="1"/>
+        <text x="735" y="661" class="zlabel" font-size="9" fill="#e5e7eb">Presse 📰</text>
+      </g>
+      <g class="zone" id="z-boul-bot" onclick="zoneClick('boulangerie')">
+        <rect x="265" y="648" width="80" height="26" rx="3" fill="#d97706" stroke="#f59e0b" stroke-width="1"/>
+        <text x="305" y="661" class="zlabel" font-size="9" fill="#fffbeb">Boulangerie 🍞</text>
+      </g>
+      <g class="zone" id="z-foires" onclick="zoneClick('vins')">
+        <rect x="184" y="576" width="72" height="30" rx="2" fill="#7f1d1d" stroke="#ef4444" stroke-width="1"/>
+        <text x="220" y="591" class="zlabel" font-size="8" fill="#fecaca">Foires à vins</text>
+      </g>
+      <g class="zone" id="z-consignes" onclick="zoneClick('consignes')">
+        <rect x="534" y="640" width="50" height="34" rx="3" fill="#1f2937" stroke="#6b7280" stroke-width="1"/>
+        <text x="559" y="654" class="zlabel" font-size="7" fill="#9ca3af">Consi-</text>
+        <text x="559" y="664" class="zlabel" font-size="7" fill="#9ca3af">gnes</text>
+      </g>
+
+      <!-- ── ENTRANCES ── -->
+      <rect x="18" y="630" width="90" height="34" rx="4" fill="#0d2a4a" stroke="#1a7fe8" stroke-width="2"/>
+      <text x="63" y="648" class="zlabel" font-size="10" fill="#60a5fa" font-weight="600">↑ Entrée C</text>
+      <rect x="440" y="648" width="90" height="26" rx="4" fill="#0d2a4a" stroke="#1a7fe8" stroke-width="2"/>
+      <text x="485" y="661" class="zlabel" font-size="10" fill="#60a5fa" font-weight="600">↑ Entrée B</text>
+      <rect x="880" y="630" width="90" height="34" rx="4" fill="#0d2a4a" stroke="#1a7fe8" stroke-width="2"/>
+      <text x="925" y="648" class="zlabel" font-size="10" fill="#60a5fa" font-weight="600">↑ Entrée A</text>
+
+      <!-- YOU ARE HERE -->
+      <circle class="you-pulse" cx="485" cy="620" r="8" fill="rgba(34,197,94,0.3)"/>
+      <circle cx="485" cy="620" r="5" fill="#22c55e"/>
+      <circle cx="485" cy="620" r="2.5" fill="#fff"/>
+      <text x="485" y="638" class="zlabel" font-size="8" fill="#22c55e" font-weight="600">VOUS ÊTES ICI</text>
+
+      <!-- NAV PATH -->
+      <path id="navPath" class="nav-path" d="" style="display:none"/>
+
+      <!-- DEST MARKER -->
+      <g id="destMarker" style="display:none">
+        <circle id="dOuter" class="dest-pulse" cx="0" cy="0" r="12" fill="rgba(245,200,0,0.2)"/>
+        <circle id="dInner" cx="0" cy="0" r="7" fill="#f5c800"/>
+        <circle id="dCore" cx="0" cy="0" r="3" fill="#fff"/>
+      </g>
+    </svg>
+
+    <!-- Tooltip -->
+    <div class="mtt" id="mtt"><h4 id="mttTitle">—</h4><p id="mttDesc">—</p></div>
+
+    <!-- Legend -->
+    <div class="map-legend">
+      <span class="leg" onclick="doSearch('épicerie')"><span class="leg-dot" style="background:#ea580c"></span>Épicerie</span>
+      <span class="leg" onclick="doSearch('boucherie')"><span class="leg-dot" style="background:#b45309"></span>Boucherie</span>
+      <span class="leg" onclick="doSearch('fruits légumes')"><span class="leg-dot" style="background:#16a34a"></span>Fruits &amp; Légumes</span>
+      <span class="leg" onclick="doSearch('crèmerie')"><span class="leg-dot" style="background:#65a30d"></span>Crèmerie</span>
+      <span class="leg" onclick="doSearch('hygiène')"><span class="leg-dot" style="background:#7c3aed"></span>Hygiène</span>
+      <span class="leg" onclick="doSearch('surgelés')"><span class="leg-dot" style="background:#4338ca"></span>Surgelés</span>
+      <span class="leg" onclick="doSearch('habillement')"><span class="leg-dot" style="background:#db2777"></span>Habillement</span>
+      <span class="leg" onclick="doSearch('alcool')"><span class="leg-dot" style="background:#7f1d1d"></span>Alcool / Vins</span>
+      <span class="leg" onclick="doSearch('boulangerie')"><span class="leg-dot" style="background:#d97706"></span>Boulangerie</span>
+      <span class="leg" onclick="doSearch('entretien')"><span class="leg-dot" style="background:#0891b2"></span>Entretien</span>
+      <span class="leg" onclick="doSearch('pharmacie')"><span class="leg-dot" style="background:#166534"></span>Pharmacie</span>
+      <span class="leg" onclick="doSearch('caisses')"><span class="leg-dot" style="background:#374151"></span>Caisses</span>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PAGE 2 — SCANNER
+═══════════════════════════════════ -->
+<div class="page" id="page-scanner">
+<div class="scanner-wrap">
+
+  <!-- LEFT -->
+  <div class="scan-left">
+    <div class="panel">
+      <div class="panel-title">⚙ Configuration du rayon</div>
+      <div class="flabel">Nom du rayon</div>
+      <input type="text" class="finput" id="rayonName" placeholder="Ex : Épicerie salée" value="Épicerie salée"/>
+      <div class="flabel">Nombre d'étagères</div>
+      <select class="finput" id="shelfCount">
+        <option value="2">2 étagères</option>
+        <option value="3" selected>3 étagères</option>
+        <option value="4">4 étagères</option>
+        <option value="5">5 étagères</option>
+      </select>
+      <div class="flabel">Sections</div>
+      <div id="secBuilder">
+        <div class="sec-row"><div class="sec-badge" style="background:rgba(0,87,168,0.2);color:#7db8ff">S1</div><input type="text" value="Section 1"/></div>
+        <div class="sec-row"><div class="sec-badge" style="background:rgba(245,200,0,0.15);color:#f5c800">S2</div><input type="text" value="Section 2"/></div>
+        <div class="sec-row"><div class="sec-badge" style="background:rgba(0,229,160,0.12);color:#00e5a0">S3</div><input type="text" value="Section 3"/></div>
+      </div>
+      <button class="add-sec" onclick="addSec()">+ Ajouter une section</button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">📷 Photo du rayon</div>
+      <div class="upload-zone" id="upZone">
+        <input type="file" accept="image/*" id="upInput" onchange="handleUp(this)"/>
+        <div class="ui">📸</div>
+        <p><strong>Clique ou glisse</strong> une photo<br><span style="font-size:.73rem;color:var(--muted)">JPG · PNG · WEBP</span></p>
+        <img id="upPreview" alt="preview"/>
+      </div>
+    </div>
+
+    <button class="scan-btn" id="scanBtn" onclick="doScan()" disabled>
+      <div class="spinner" id="scanSpinner"></div>
+      <span id="scanBtnTxt">🔍 Analyser avec l'IA</span>
+    </button>
+    <div style="text-align:center;font-size:.72rem;color:var(--muted);line-height:1.5">
+      L'IA détecte chaque produit et génère ses coordonnées XY sur la grille du rayon
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="scan-right">
+    <div class="scan-output">
+      <div class="scan-tabs">
+        <button class="stab active" onclick="switchScanView('canvas',this)">🗺 Carte</button>
+        <button class="stab" onclick="switchScanView('json',this)">{ } JSON</button>
+      </div>
+      <div class="scan-canvas-wrap" id="scanCanvasWrap">
+        <div class="scan-empty" id="scanEmpty">
+          <div class="ei">🏪</div>
+          <p>Configure le rayon, ajoute une photo et lance l'analyse pour voir les produits mappés.</p>
+        </div>
+        <canvas id="scanCanvas" width="800" height="420"></canvas>
+        <div class="thinking" id="thinkingOv">
+          <div class="think-spin"></div>
+          <div class="think-label">Analyse en cours…</div>
+          <div class="think-sub" id="thinkStep">Initialisation</div>
+        </div>
+      </div>
+      <div class="json-area" id="jsonArea">
+        <div class="json-block" id="jsonBlock">// Lance une analyse pour voir le JSON ici</div>
+      </div>
+      <div class="prod-list" id="prodList"></div>
+      <div class="export-bar" id="exportBar">
+        <button class="exp-btn exp-json" onclick="doExport()">⬇ Exporter JSON</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+// ══════════════════════════════
+// ZONE DATABASE
+// ══════════════════════════════
+const ZONES = {
+  'poissonnerie': { id:'z-poissonnerie', name:'Poissonnerie', desc:'Rayon frais — haut du magasin', cx:315, cy:39, icon:'🐟' },
+  'boucherie':    { id:'z-boucherie',    name:'Boucherie',    desc:'Rayon frais — haut du magasin', cx:455, cy:39, icon:'🥩' },
+  'fromagerie':   { id:'z-fromagerie',   name:'Fromagerie · Charcuterie · Traiteur', desc:'Rayon frais — haut du magasin', cx:640, cy:39, icon:'🧀' },
+  'boulangerie':  { id:'z-boul-top',     name:'Boulangerie · Pâtisserie', desc:'Haut droite + Entrée B', cx:894, cy:39, icon:'🍞' },
+  'woki':         { id:'z-woki',         name:'Woki Moki', desc:'Restauration — haut centre', cx:774, cy:39, icon:'🍜' },
+  'épicerie':     { id:'z-epicerie-sal', name:'Épicerie salée', desc:'Centre du magasin — haut gauche', cx:244, cy:148, icon:'🥫' },
+  'épicerie sucrée': { id:'z-epicerie-suc', name:'Épicerie sucrée', desc:'Centre du magasin — bas gauche', cx:239, cy:472, icon:'🍪' },
+  'crèmerie':     { id:'z-cremerie',     name:'Crèmerie', desc:'Centre haut — lait, yaourt, fromage', cx:353, cy:148, icon:'🥛' },
+  'lait':         { id:'z-lait',         name:'Lait · Œufs', desc:'Colonne gauche + centre bas', cx:83, cy:98, icon:'🥚' },
+  'fruits légumes': { id:'z-fruits',     name:'Fruits & Légumes', desc:'Centre du magasin — haut', cx:457, cy:148, icon:'🥦' },
+  'hygiène':      { id:'z-hygiene',      name:'Hygiène · Soin · Maquillage', desc:'Centre haut — droite', cx:591, cy:148, icon:'🧴' },
+  'habillement':  { id:'z-hab-bot',      name:'Habillement', desc:'Centre bas + haut droite', cx:673, cy:472, icon:'👗' },
+  'surgelés':     { id:'z-surgeles',     name:'Surgelés', desc:'Centre bas du magasin', cx:461, cy:472, icon:'❄️' },
+  'glaces':       { id:'z-glaces',       name:'Glaces', desc:'Centre bas', cx:399, cy:472, icon:'🍦' },
+  'alcool':       { id:'z-alcool',       name:'Alcool', desc:'Colonne gauche — bas', cx:83, cy:436, icon:'🍾' },
+  'vins':         { id:'z-vins',         name:'Vins', desc:'Colonne gauche — milieu', cx:83, cy:256, icon:'🍷' },
+  'bière':        { id:'z-biere',        name:'Bière', desc:'Colonne gauche — milieu bas', cx:83, cy:314, icon:'🍺' },
+  'gâteaux apéritifs': { id:'z-gateaux', name:'Gâteaux apéritifs', desc:'Colonne gauche', cx:83, cy:374, icon:'🥨' },
+  'saucisson':    { id:'z-saucisson',    name:'Saucisson', desc:'Colonne gauche', cx:83, cy:342, icon:'🥓' },
+  'animalerie':   { id:'z-animalerie',   name:'Animalerie', desc:'Colonne gauche — haut', cx:83, cy:137, icon:'🐾' },
+  'bio':          { id:'z-bio',          name:'Bio · Sans gluten · Diét.', desc:'Colonne gauche', cx:83, cy:202, icon:'🌿' },
+  'produits du monde': { id:'z-monde',   name:'Produits du monde', desc:'Colonne gauche', cx:83, cy:177, icon:'🌍' },
+  'produits locaux': { id:'z-locaux',    name:'Produits locaux sucrés', desc:'Haut droite', cx:894, cy:73, icon:'🏡' },
+  'entretien':    { id:'z-entretien',    name:'Produits entretien & hygiène', desc:'Colonne droite', cx:907, cy:152, icon:'🧹' },
+  'bricolage':    { id:'z-bricolage',    name:'Bricolage · Auto', desc:'Colonne droite', cx:907, cy:212, icon:'🔧' },
+  'sport':        { id:'z-sport',        name:'Sport · Jouets', desc:'Colonne droite', cx:907, cy:252, icon:'⚽' },
+  'bazar':        { id:'z-bazar',        name:'Bazar saisonnier · Jardin', desc:'Colonne droite', cx:907, cy:335, icon:'🌱' },
+  'papeterie':    { id:'z-papeterie',    name:'Papeterie', desc:'Colonne droite', cx:907, cy:418, icon:'✏️' },
+  'art de la table': { id:'z-art-table', name:'Art de la table', desc:'Colonne droite', cx:907, cy:465, icon:'🍽️' },
+  'électroménager': { id:'z-electro',    name:'Électroménager', desc:'Colonne droite — bas', cx:907, cy:525, icon:'🏠' },
+  'jus de fruits': { id:'z-jus',         name:'Jus de fruits', desc:'Centre bas', cx:359, cy:472, icon:'🧃' },
+  'pharmacie':    { id:'z-pharmacie',    name:'Pharmacie', desc:'Entrée B — bas du magasin', cx:635, cy:661, icon:'💊' },
+  'presse':       { id:'z-presse',       name:'Presse', desc:'Bas du magasin', cx:735, cy:661, icon:'📰' },
+  'caisses':      { id:'z-caisses',      name:'Caisses', desc:'Rangée centrale — bas', cx:513, cy:591, icon:'🛒' },
+  'accueil':      { id:'z-accueil',      name:'Accueil', desc:'Bas droite', cx:803, cy:634, icon:'ℹ️' },
+  'bijoux':       { id:'z-bijoux',       name:'Bijoux', desc:'Bas centre', cx:605, cy:635, icon:'💍' },
+  'bébé':         { id:'z-bebe',         name:'Présentation bébé', desc:'Centre bas', cx:524, cy:472, icon:'👶' },
+  'sav':          { id:'z-sav',          name:'Retrait SAV', desc:'Bas droite', cx:870, cy:574, icon:'🔄' },
+  'espace culturel': { id:'z-culturel',  name:'Espace culturel', desc:'Bas droite', cx:945, cy:574, icon:'📚' },
+  'promo':        { id:'z-promo1',       name:'Zone Promo', desc:'Allées promotionnelles', cx:166, cy:228, icon:'🏷️' },
+  'pâtisserie':   { id:'z-pati-left',    name:'Pâtisserie industrielle', desc:'Haut gauche + haut droite', cx:83, cy:73, icon:'🥐' },
+  'consignes':    { id:'z-consignes',    name:'Consignes', desc:'Entrée B', cx:559, cy:657, icon:'🔐' },
+};
+
+const KW = {
+  'nutella':'épicerie sucrée','chocolat':'épicerie sucrée','confiture':'épicerie sucrée',
+  'café':'épicerie','thé':'épicerie','pâtes':'épicerie','riz':'épicerie','huile':'épicerie',
+  'sel':'épicerie','sucre':'épicerie','farine':'épicerie','conserve':'épicerie',
+  'chips':'gâteaux apéritifs','biscuit':'épicerie sucrée','gâteau':'épicerie sucrée','céréales':'épicerie sucrée',
+  'yaourt':'crèmerie','fromage':'fromagerie','beurre':'crèmerie','crème':'crèmerie',
+  'lait':'lait','oeuf':'lait','œuf':'lait',
+  'viande':'boucherie','steak':'boucherie','poulet':'boucherie','agneau':'boucherie','rôti':'boucherie',
+  'poisson':'poissonnerie','crevette':'poissonnerie','saumon':'poissonnerie','moule':'poissonnerie',
+  'légume':'fruits légumes','fruit':'fruits légumes','tomate':'fruits légumes','salade':'fruits légumes','pomme':'fruits légumes',
+  'shampoing':'hygiène','gel douche':'hygiène','dentifrice':'hygiène','rasoir':'hygiène','déodorant':'hygiène',
+  'couche':'bébé','bib':'bébé',
+  'pizza':'surgelés','surgelé':'surgelés','frite':'surgelés',
+  'glace':'glaces',
+  'vin':'vins','rosé':'vins','bordeaux':'vins','champagne':'alcool','mousseux':'alcool',
+  'bière':'bière','heineken':'bière','kronenbourg':'bière',
+  'whisky':'alcool','vodka':'alcool','rhum':'alcool','gin':'alcool',
+  'pain':'boulangerie','croissant':'boulangerie','viennoiserie':'boulangerie','brioche':'boulangerie',
+  'médicament':'pharmacie','aspirine':'pharmacie','doliprane':'pharmacie','sirop':'pharmacie',
+  'journal':'presse','magazine':'presse','livre':'espace culturel',
+  'stylo':'papeterie','cahier':'papeterie','classeur':'papeterie',
+  'chat':'animalerie','chien':'animalerie','croquette':'animalerie','litière':'animalerie',
+  'caisse':'caisses','payer':'caisses',
+  'javel':'entretien','lessive':'entretien','éponge':'entretien','vaisselle':'entretien',
+  'vis':'bricolage','outil':'bricolage','peinture':'bricolage',
+  'jouet':'sport','ballon':'sport','vélo':'sport',
+  'jus':'jus de fruits','orange pressée':'jus de fruits',
+  'charcuterie':'fromagerie','jambon':'fromagerie','saucisse':'boucherie',
+  'saucisson':'saucisson','apéro':'gâteaux apéritifs',
+};
+
+let currentZone = null;
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('page-' + tab).classList.add('active');
+}
+
+// ── SEARCH ──
+function doSearch(term) {
+  const q = (term || document.getElementById('searchInput').value).trim().toLowerCase();
+  if (!q) return;
+  if (term) document.getElementById('searchInput').value = term;
+
+  let key = null;
+  if (ZONES[q]) key = q;
+  if (!key) { for (const [kw, zk] of Object.entries(KW)) { if (q.includes(kw) || kw.includes(q)) { key = zk; break; } } }
+  if (!key) { for (const k of Object.keys(ZONES)) { if (k.includes(q) || q.includes(k)) { key = k; break; } } }
+
+  document.getElementById('notFoundMsg').className = 'not-found-msg';
+  document.getElementById('resultBanner').className = 'result-banner';
+
+  if (!key) {
+    document.getElementById('notFoundMsg').className = 'not-found-msg show';
+    clearNav(); return;
+  }
+
+  const z = ZONES[key];
+  zoneClick(key);
+  drawNav(z.cx, z.cy);
+
+  document.getElementById('resIcon').textContent = z.icon;
+  document.getElementById('resName').textContent = z.name;
+  document.getElementById('resDesc').textContent = z.desc;
+  document.getElementById('resTag').textContent = z.name;
+  document.getElementById('resultBanner').className = 'result-banner show';
+}
+
+function zoneClick(key) {
+  if (currentZone) {
+    const prev = document.getElementById(ZONES[currentZone]?.id);
+    if (prev) prev.classList.remove('hl');
+  }
+  if (!ZONES[key]) return;
+  currentZone = key;
+  const el = document.getElementById(ZONES[key].id);
+  if (el) el.classList.add('hl');
+}
+
+function drawNav(tx, ty) {
+  const sx = 485, sy = 615;
+  const p = `M${sx},${sy} L${sx},${Math.min(ty + 40, sy - 10)} L${tx},${Math.min(ty + 40, sy - 10)} L${tx},${ty + 14}`;
+  const nav = document.getElementById('navPath');
+  nav.setAttribute('d', p); nav.style.display = 'block';
+  ['dOuter','dInner','dCore'].forEach(id => {
+    document.getElementById(id).setAttribute('cx', tx);
+    document.getElementById(id).setAttribute('cy', ty);
+  });
+  document.getElementById('destMarker').style.display = 'block';
+}
+
+function clearNav() {
+  document.getElementById('navPath').style.display = 'none';
+  document.getElementById('destMarker').style.display = 'none';
+  if (currentZone) { const el = document.getElementById(ZONES[currentZone]?.id); if (el) el.classList.remove('hl'); currentZone = null; }
+}
+
+document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+// Tooltips on map zones
+document.querySelectorAll('.zone').forEach(el => {
+  el.addEventListener('mouseenter', function(e) {
+    const z = Object.values(ZONES).find(z => z.id === this.id);
+    if (!z) return;
+    document.getElementById('mttTitle').textContent = z.icon + '  ' + z.name;
+    document.getElementById('mttDesc').textContent = z.desc;
+    document.getElementById('mtt').style.display = 'block';
+  });
+  el.addEventListener('mousemove', function(e) {
+    const wrap = document.querySelector('.map-card');
+    const r = wrap.getBoundingClientRect();
+    const tt = document.getElementById('mtt');
+    tt.style.left = (e.clientX - r.left + 12) + 'px';
+    tt.style.top = (e.clientY - r.top - 12) + 'px';
+  });
+  el.addEventListener('mouseleave', () => { document.getElementById('mtt').style.display = 'none'; });
+});
+
+// ══════════════════════════════
+// SCANNER IA
+// ══════════════════════════════
+let scannedProds = [], upFile = null, secCount = 3;
+const SEC_COLORS = ['#1a7fe8','#f5c800','#00e5a0','#ff4d6d','#a78bfa','#fb923c'];
+
+function addSec() {
+  secCount++;
+  const labels = ['S1','S2','S3','S4','S5','S6','S7','S8'];
+  const label = labels[secCount - 1] || 'S'+secCount;
+  const color = SEC_COLORS[(secCount - 1) % SEC_COLORS.length];
+  const row = document.createElement('div');
+  row.className = 'sec-row';
+  row.innerHTML = `<div class="sec-badge" style="background:${color}26;color:${color}">${label}</div><input type="text" placeholder="Nom section"/>`;
+  document.getElementById('secBuilder').appendChild(row);
+}
+
+function getSecs() {
+  return Array.from(document.querySelectorAll('#secBuilder .sec-row')).map((r, i) => ({
+    id: r.querySelector('.sec-badge').textContent,
+    name: r.querySelector('input').value || 'Section '+(i+1),
+    color: SEC_COLORS[i % SEC_COLORS.length]
+  }));
+}
+
+function handleUp(input) {
+  const file = input.files[0]; if (!file) return;
+  upFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const p = document.getElementById('upPreview');
+    p.src = e.target.result; p.style.display = 'block';
+    document.getElementById('upZone').style.borderColor = 'var(--green)';
+    document.getElementById('scanBtn').disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+
+// Drag
+const uz = document.getElementById('upZone');
+uz.addEventListener('dragover', e => { e.preventDefault(); uz.style.borderColor='var(--yellow)'; });
+uz.addEventListener('dragleave', () => uz.style.borderColor='');
+uz.addEventListener('drop', e => {
+  e.preventDefault(); uz.style.borderColor='';
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) {
+    const dt = new DataTransfer(); dt.items.add(f);
+    document.getElementById('upInput').files = dt.files;
+    handleUp(document.getElementById('upInput'));
+  }
+});
+
+async function doScan() {
+  if (!upFile) return;
+  const btn = document.getElementById('scanBtn');
+  const sp = document.getElementById('scanSpinner');
+  const bt = document.getElementById('scanBtnTxt');
+  const ov = document.getElementById('thinkingOv');
+  btn.disabled = true; sp.style.display = 'block'; bt.textContent = 'Analyse…';
+  ov.classList.add('show');
+  document.getElementById('scanEmpty').style.display = 'none';
+  document.getElementById('scanCanvas').style.display = 'none';
+
+  const steps = ['Lecture de la photo…','Détection des produits…','Calcul coordonnées XY…','Mapping sur la grille…','Génération JSON…'];
+  let si = 0;
+  const iv = setInterval(() => { document.getElementById('thinkStep').textContent = steps[si++ % steps.length]; }, 900);
+
+  try {
+    const b64 = await toB64(upFile);
+    const secs = getSecs();
+    const nShelves = parseInt(document.getElementById('shelfCount').value);
+    const rName = document.getElementById('rayonName').value;
+
+    const prompt = `Tu es un système vision IA pour supermarché. Analyse cette photo du rayon "${rName}".
+
+STRUCTURE: ${nShelves} étagères (1=haut, ${nShelves}=bas). Sections: ${secs.map(s=>`${s.id}="${s.name}"`).join(', ')}.
+
+Pour chaque produit visible, retourne JSON (grille 100×100, x=0 gauche→100 droite, y=0 haut→100 bas):
+[{"nom":"...","marque":"...","section":"${secs[0]?.id}","etagere":1,"x":15,"y":30,"largeur":10,"prix_estime":"2.99"}]
+
+UNIQUEMENT le tableau JSON, sans markdown ni texte.`;
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:4000,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:upFile.type,data:b64}},
+          {type:'text',text:prompt}
+        ]}]
+      })
+    });
+    if (!resp.ok) { const err = await resp.json(); throw new Error(err.error?.message||'Erreur API'); }
+    const data = await resp.json();
+    const raw = data.content[0].text.trim().replace(/^```json?\s*/i,'').replace(/```\s*$/i,'').trim();
+    const start = raw.indexOf('['), end = raw.lastIndexOf(']');
+    if (start < 0) throw new Error('JSON invalide');
+    scannedProds = JSON.parse(raw.slice(start, end+1));
+
+    clearInterval(iv);
+    renderScanMap(scannedProds, secs, nShelves, rName);
+    renderProdList(scannedProds, secs);
+    renderScanJSON(scannedProds, rName, secs);
+    document.getElementById('exportBar').className = 'export-bar show';
+
+  } catch(err) {
+    clearInterval(iv);
+    document.getElementById('thinkStep').textContent = '⚠ ' + err.message;
+    setTimeout(() => ov.classList.remove('show'), 3000);
+  }
+
+  ov.classList.remove('show');
+  btn.disabled = false; sp.style.display = 'none'; bt.textContent = '🔍 Analyser avec l\'IA';
+}
+
+function renderScanMap(prods, secs, nShelves, rName) {
+  const canvas = document.getElementById('scanCanvas');
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const P = {top:50, left:44, right:24, bottom:40};
+  const cW = W - P.left - P.right, cH = H - P.top - P.bottom;
+
+  // BG
+  ctx.fillStyle = '#0d1424'; ctx.beginPath(); ctx.roundRect(0,0,W,H,10); ctx.fill();
+
+  // Section backgrounds
+  secs.forEach((sec, i) => {
+    const sW = cW / secs.length;
+    const sx = P.left + i * sW;
+    ctx.fillStyle = sec.color + '10';
+    ctx.fillRect(sx, P.top, sW, cH);
+    ctx.strokeStyle = sec.color + '28';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(sx, P.top, sW, cH);
+    ctx.fillStyle = sec.color + '99';
+    ctx.font = '600 10px "Syne",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(sec.id+' · '+sec.name, sx + sW/2, P.top - 8);
+  });
+
+  // Shelves
+  for (let s = 1; s <= nShelves; s++) {
+    const sy = P.top + (s/(nShelves+1)) * cH;
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1;
+    ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(P.left, sy); ctx.lineTo(P.left+cW, sy); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.font = '9px "JetBrains Mono",monospace'; ctx.textAlign = 'right';
+    ctx.fillText('E'+s, P.left-5, sy+4);
+  }
+
+  // Axis labels
+  ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.font = '9px "JetBrains Mono",monospace'; ctx.textAlign = 'center';
+  for (let x=0; x<=100; x+=20) ctx.fillText(x, P.left+(x/100)*cW, H-6);
+
+  // Title
+  ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.font = '600 11px "Syne",sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText(rName + ' — ' + prods.length + ' produits détectés', P.left, 20);
+
+  // Products
+  prods.forEach(prod => {
+    const sec = secs.find(s => s.id === prod.section) || secs[0];
+    const color = sec?.color || '#ffffff';
+    const px = P.left + (prod.x/100)*cW;
+    const py = P.top + (prod.y/100)*cH;
+    const pw = Math.max(18, (prod.largeur||8)/100*cW);
+
+    ctx.fillStyle = color + '1e'; ctx.strokeStyle = color + '80'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.roundRect(px-pw/2, py-13, pw, 26, 4); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = color; ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.82)'; ctx.font = '500 8px "DM Sans",sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(prod.nom.length > 13 ? prod.nom.slice(0,12)+'…' : prod.nom, px, py+3);
+  });
+}
+
+function renderProdList(prods, secs) {
+  const list = document.getElementById('prodList');
+  list.style.display = 'block';
+  list.innerHTML = prods.map((p, i) => {
+    const sec = secs.find(s => s.id === p.section);
+    const col = sec?.color || '#fff';
+    return `<div class="pitem">
+      <div class="pdot" style="background:${col}"></div>
+      <div class="pname">${p.nom}</div>
+      <div class="pcoord">x:${p.x} y:${p.y}</div>
+      <div class="psec" style="color:${col};background:${col}18">${p.section}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderScanJSON(prods, rName, secs) {
+  const data = { rayon: rName, sections: secs.map(s=>({id:s.id,nom:s.name})), grille:'100x100', produits: prods };
+  const raw = JSON.stringify(data, null, 2);
+  document.getElementById('jsonBlock').innerHTML = raw
+    .replace(/"([^"]+)":/g, '<span class="jk">"$1":</span>')
+    .replace(/: "([^"]*)"/g, ': <span class="js">"$1"</span>')
+    .replace(/: (\d+\.?\d*)/g, ': <span class="jn">$1</span>');
+}
+
+function switchScanView(view, btn) {
+  document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('scanCanvasWrap').style.display = view === 'canvas' ? 'flex' : 'none';
+  document.getElementById('jsonArea').style.display = view === 'json' ? 'flex' : 'none';
+  document.getElementById('prodList').style.display = view === 'canvas' && scannedProds.length ? 'block' : 'none';
+}
+
+function doExport() {
+  const secs = getSecs();
+  const data = { rayon: document.getElementById('rayonName').value, sections: secs, grille:'100x100', produits: scannedProds };
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data,null,2)], {type:'application/json'}));
+  a.download = 'leclerc-ifs-scanner.json'; a.click();
+}
+
+function toB64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+</script>
+</body>
+</html>
